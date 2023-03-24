@@ -7,8 +7,8 @@ services:
       GREENMAIL_OPTS: "-Dgreenmail.smtp.port=${SMTP_PORT} -Dgreenmail.imap.port=${IMAP_PORT} -Dgreenmail.users=${EMAIL_USER}:${EMAIL_PASSWORD} -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.verbose"
       JAVA_OPTS: "-Djava.net.preferIPv4Stack=true -Xmx512m"
     healthcheck:
-      test: timeout 5s bash -c ':> /dev/tcp/127.0.0.1/8080' || exit 1
-      interval: 5s
+      test: timeout 1s bash -c ':> /dev/tcp/127.0.0.1/8080' || exit 1
+      interval: 1s
       retries: 3
 
   email_sender:
@@ -21,11 +21,3 @@ services:
     depends_on:
       greenmail:
         condition: service_healthy
-    networks:
-      - default
-
-
-networks:
-  # The presence of these objects is sufficient to define them
-  default: 
-    driver: bridge
