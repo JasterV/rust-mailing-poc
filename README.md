@@ -1,5 +1,7 @@
 # rust-mailing-poc
 
+Just a POC of both SMTP and IMAP rust clients.
+
 ## TODO
 
 - [ ] Use env_logger (just for fun actually)
