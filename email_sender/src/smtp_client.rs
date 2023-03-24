@@ -10,6 +10,7 @@ pub struct Client {
 
 type ServerAddress = (String, u16);
 
+#[derive(Debug)]
 pub struct Credentials {
     pub user: String,
     pub password: String,

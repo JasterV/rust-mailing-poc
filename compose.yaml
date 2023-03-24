@@ -4,19 +4,38 @@ services:
     image: "greenmail/standalone:2.0.0"
     env_file: ".env"
     environment:
-      GREENMAIL_OPTS: "-Dgreenmail.setup.test.smtp -Dgreenmail.setup.test.imap -Dgreenmail.users=${GREENMAIL_USER}:${GREENMAIL_PASSWORD} -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.verbose"
+      GREENMAIL_OPTS: "-Dgreenmail.setup.test.smtp -Dgreenmail.setup.test.imap -Dgreenmail.users=${EMAIL_USER}:${EMAIL_PASSWORD} -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.verbose"
       JAVA_OPTS: "-Djava.net.preferIPv4Stack=true -Xmx512m"
     ports:
       # SMTP
-      - "3025:3025"
+      - "${SMTP_PORT}:3025"
       # IMAP
-      - "3143:3143"
+      - "${IMAP_PORT}:3143"
       # SMTPS
       - "3465:3465" 
       # IMAPS
       - "3993:3993"
       # API
       - "8080:8080"
+    healthcheck:
+      test: timeout 5s bash -c ':> /dev/tcp/127.0.0.1/8080' || exit 1
+      interval: 5s
+      retries: 3
+    networks:
+      - common
+
+  email_sender:
+    container_name: "email_sender"
+    command: "email_sender"
+    build: 
+      context: email_sender 
+      dockerfile: Dockerfile
+    env_file: ".env"
+    ports:
+      - "8000:8000"
+    depends_on:
+      greenmail:
+        condition: service_healthy
     networks:
       - common
 

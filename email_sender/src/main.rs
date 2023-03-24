@@ -1,15 +1,16 @@
+mod config;
 mod smtp_client;
 
+use config::Config;
 use smtp_client::{Client as SmtpClient, Credentials, SendEmailRequest};
 use std::convert::Infallible;
 use warp::{http::StatusCode, Filter, Rejection, Reply};
 
 pub async fn health_handler() -> Result<impl Reply, Rejection> {
-    println!("Health check!");
     Ok(StatusCode::OK)
 }
 
-pub async fn send_email_handler(client: SmtpClient) -> std::result::Result<impl Reply, Rejection> {
+pub async fn send_email_handler(client: SmtpClient) -> Result<impl Reply, Rejection> {
     let mock_req = SendEmailRequest {
         from: "from@localhost".into(),
         to: "patata@localhost".into(),
@@ -37,11 +38,15 @@ fn with_smtp_client(
 
 #[tokio::main]
 async fn main() {
+    let config = Config::build();
+
+    println!("Trying to connect...");
+
     let client = SmtpClient::new(
-        ("localhost".into(), 3025),
+        (config.server_url, config.smtp_port),
         Credentials {
-            user: "admin".into(),
-            password: "password".into(),
+            user: config.email_user,
+            password: config.email_password,
         },
     )
     .await;
@@ -55,6 +60,8 @@ async fn main() {
     let routes = health_route
         .or(send_email_route)
         .with(warp::cors().allow_any_origin());
+
+    println!("Running email sender...");
 
     warp::serve(routes).run(([127, 0, 0, 1], 8000)).await;
 }

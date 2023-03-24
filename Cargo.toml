@@ -1,6 +1,0 @@
-[workspace]
-
-members = [
-  "email_sender",
-  "email_receiver"
-]

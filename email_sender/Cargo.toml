@@ -9,3 +9,5 @@ edition = "2021"
 tokio = { version = "1", features = ["full"] }
 warp = "0.3"
 lettre = { version = "0.10", features = ["tokio1", "tokio1-native-tls"]}
+envy = "0.4.2"
+serde = { version = "1.0.158", features = ["derive"] }
