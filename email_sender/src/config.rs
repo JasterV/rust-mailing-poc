@@ -6,6 +6,7 @@ pub struct Config {
     pub server_url: String,
     pub email_user: String,
     pub email_password: String,
+    pub sender_port: u16,
 }
 
 impl Config {

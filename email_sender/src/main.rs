@@ -63,5 +63,7 @@ async fn main() {
 
     println!("Running email sender...");
 
-    warp::serve(routes).run(([127, 0, 0, 1], 8000)).await;
+    warp::serve(routes)
+        .run(([0, 0, 0, 0], config.sender_port))
+        .await;
 }
