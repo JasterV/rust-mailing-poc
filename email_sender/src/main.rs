@@ -2,22 +2,30 @@ mod smtp_client;
 
 use smtp_client::{Client as SmtpClient, Credentials, SendEmailRequest};
 use std::convert::Infallible;
-use warp::{hyper::StatusCode, Filter, Rejection, Reply};
+use warp::{http::StatusCode, Filter, Rejection, Reply};
 
 pub async fn health_handler() -> Result<impl Reply, Rejection> {
+    println!("Health check!");
     Ok(StatusCode::OK)
 }
 
 pub async fn send_email_handler(client: SmtpClient) -> std::result::Result<impl Reply, Rejection> {
     let mock_req = SendEmailRequest {
-        to: "patata@email.com".into(),
+        from: "from@localhost".into(),
+        to: "patata@localhost".into(),
         subject: "test".into(),
         body: "This is a test".into(),
     };
 
     match client.send_email(mock_req).await {
-        Ok(_) => Ok(StatusCode::OK),
-        Err(_) => Ok(StatusCode::IM_A_TEAPOT),
+        Ok(_) => Ok(warp::reply::with_status(
+            "Email sent".into(),
+            StatusCode::OK,
+        )),
+        Err(e) => Ok(warp::reply::with_status(
+            format!("Error sending email => #{e:?}"),
+            StatusCode::IM_A_TEAPOT,
+        )),
     }
 }
 
@@ -29,12 +37,14 @@ fn with_smtp_client(
 
 #[tokio::main]
 async fn main() {
-    let client = SmtpClient::new(Credentials {
-        email: "mock@email.com".into(),
-        domain: "localhost".into(),
-        user: "admin".into(),
-        password: "password".into(),
-    });
+    let client = SmtpClient::new(
+        ("localhost".into(), 3025),
+        Credentials {
+            user: "admin".into(),
+            password: "password".into(),
+        },
+    )
+    .await;
 
     let health_route = warp::path!("health").and_then(health_handler);
     let send_email_route = warp::path!("send")

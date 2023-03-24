@@ -6,42 +6,44 @@ use lettre::{AsyncSmtpTransport, AsyncTransport, Tokio1Executor};
 #[derive(Clone, Debug)]
 pub struct Client {
     transport: AsyncSmtpTransport<Tokio1Executor>,
-    email: String,
 }
+
+type ServerAddress = (String, u16);
 
 pub struct Credentials {
     pub user: String,
     pub password: String,
-    pub email: String,
-    pub domain: String,
 }
 
 pub struct SendEmailRequest {
+    pub from: String,
     pub to: String,
     pub body: String,
     pub subject: String,
 }
 
 impl Client {
-    pub fn new(credentials: Credentials) -> Self {
+    pub async fn new((domain, port): ServerAddress, credentials: Credentials) -> Self {
         let creds = LettreCredentials::new(credentials.user, credentials.password);
 
         // Open a remote connection to gmail
         let mailer: AsyncSmtpTransport<Tokio1Executor> =
-            AsyncSmtpTransport::<Tokio1Executor>::relay(&credentials.domain)
-                .unwrap()
+            AsyncSmtpTransport::<Tokio1Executor>::builder_dangerous(domain)
                 .credentials(creds)
+                .port(port)
                 .build();
 
-        Self {
-            transport: mailer,
-            email: credentials.email,
-        }
+        mailer
+            .test_connection()
+            .await
+            .expect("Couldn't connect to SMTP server");
+
+        Self { transport: mailer }
     }
 
     pub async fn send_email(&self, data: SendEmailRequest) -> Result<(), String> {
         let email = Message::builder()
-            .from(self.email.parse().unwrap())
+            .from(data.from.parse().unwrap())
             .to(data.to.parse().unwrap())
             .subject(data.subject)
             .header(ContentType::TEXT_PLAIN)
