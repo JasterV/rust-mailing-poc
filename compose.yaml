@@ -1,0 +1,26 @@
+services:
+  greenmail:
+    container_name: "greenmail"
+    image: "greenmail/standalone:2.0.0"
+    env_file: ".env"
+    environment:
+      GREENMAIL_OPTS: "-Dgreenmail.setup.test.smtp -Dgreenmail.setup.test.imap -Dgreenmail.users=${GREENMAIL_USER}:${GREENMAIL_PASSWORD} -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.verbose"
+      JAVA_OPTS: "-Djava.net.preferIPv4Stack=true -Xmx512m"
+    ports:
+      # SMTP
+      - "3025:3025"
+      # IMAP
+      - "3143:3143"
+      # SMTPS
+      - "3465:3465" 
+      # IMAPS
+      - "3993:3993"
+      # API
+      - "8080:8080"
+    networks:
+      - common
+
+
+networks:
+  # The presence of these objects is sufficient to define them
+  common: {}
