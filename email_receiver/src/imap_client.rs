@@ -8,16 +8,16 @@ pub struct Client {
     imap_session: Session<TlsStream<TcpStream>>,
 }
 
-impl Drop for Client {
-    fn drop(&mut self) {
-        // Create the runtime
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        // Execute the future, blocking the current thread until completion
-        rt.block_on(async {
-            self.imap_session.logout().await.unwrap();
-        });
-    }
-}
+// impl Drop for Client {
+//     fn drop(&mut self) {
+//         // Create the runtime
+//         let rt = tokio::runtime::Runtime::new().unwrap();
+//         // Execute the future, blocking the current thread until completion
+//         rt.block_on(async {
+//             self.imap_session.logout().await.unwrap();
+//         });
+//     }
+// }
 
 #[derive(Debug, Clone)]
 pub struct Credentials {
