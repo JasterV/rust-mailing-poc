@@ -2,25 +2,22 @@ mod config;
 mod imap_client;
 
 use config::Config;
-use futures::lock::Mutex;
 use imap_client::{Client as ImapClient, Credentials};
-use std::{convert::Infallible, sync::Arc};
+use std::convert::Infallible;
 use warp::{http::StatusCode, Filter, Rejection, Reply};
 
 async fn health_handler() -> Result<impl Reply, Rejection> {
     Ok(StatusCode::OK)
 }
 
-async fn fetch_inbox_handler(client: Arc<Mutex<ImapClient>>) -> Result<impl Reply, Rejection> {
-    let mut client = client.lock().await;
-
+async fn fetch_inbox_handler(mut client: ImapClient) -> Result<impl Reply, Rejection> {
     match client.fetch_inbox().await {
         Ok(messages) => Ok(warp::reply::with_status(
-            format!("Got {0} messages", messages.len()),
+            warp::reply::json(&messages),
             StatusCode::OK,
         )),
         Err(error) => Ok(warp::reply::with_status(
-            format!("Got an error: {error:?}"),
+            warp::reply::json(&format!("Got an error: {error:?}")),
             StatusCode::IM_A_TEAPOT,
         )),
     }
@@ -28,9 +25,8 @@ async fn fetch_inbox_handler(client: Arc<Mutex<ImapClient>>) -> Result<impl Repl
 
 fn with_imap_client(
     client: ImapClient,
-) -> impl Filter<Extract = (Arc<Mutex<ImapClient>>,), Error = Infallible> + Clone {
-    let arc = Arc::new(Mutex::new(client));
-    warp::any().map(move || arc.clone())
+) -> impl Filter<Extract = (ImapClient,), Error = Infallible> + Clone {
+    warp::any().map(move || client.clone())
 }
 
 #[tokio::main]
