@@ -4,7 +4,7 @@ services:
     image: "greenmail/standalone:2.0.0"
     env_file: ".env"
     environment:
-      GREENMAIL_OPTS: "-Dgreenmail.smtp.port=${SMTP_PORT} -Dgreenmail.imap.port=${IMAP_PORT} -Dgreenmail.users=${EMAIL_USER}:${EMAIL_PASSWORD} -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.verbose"
+      GREENMAIL_OPTS: "-Dgreenmail.smtp.port=${SMTP_PORT} -Dgreenmail.imaps.port=${IMAPS_PORT} -Dgreenmail.users=${EMAIL_SENDER_USER}:${EMAIL_SENDER_PASSWORD}@localhost,${EMAIL_RECEIVER_USER}:${EMAIL_RECEIVER_PASSWORD}@localhost -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.verbose"
       JAVA_OPTS: "-Djava.net.preferIPv4Stack=true -Xmx512m"
     healthcheck:
       test: timeout 1s bash -c ':> /dev/tcp/127.0.0.1/8080' || exit 1
@@ -18,6 +18,18 @@ services:
     env_file: ".env"
     ports:
       - "${SENDER_PORT}:${SENDER_PORT}"
+    depends_on:
+      greenmail:
+        condition: service_healthy
+
+
+  email_receiver:
+    container_name: "email_receiver"
+    command: "email_receiver"
+    build: email_receiver
+    env_file: ".env"
+    ports:
+      - "${RECEIVER_PORT}:${RECEIVER_PORT}"
     depends_on:
       greenmail:
         condition: service_healthy

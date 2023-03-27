@@ -6,14 +6,13 @@ use smtp_client::{Client as SmtpClient, Credentials, SendEmailRequest};
 use std::convert::Infallible;
 use warp::{http::StatusCode, Filter, Rejection, Reply};
 
-pub async fn health_handler() -> Result<impl Reply, Rejection> {
+async fn health_handler() -> Result<impl Reply, Rejection> {
     Ok(StatusCode::OK)
 }
 
-pub async fn send_email_handler(client: SmtpClient) -> Result<impl Reply, Rejection> {
+async fn send_email_handler(client: SmtpClient, receiver: String) -> Result<impl Reply, Rejection> {
     let mock_req = SendEmailRequest {
-        from: "from@localhost".into(),
-        to: "patata@localhost".into(),
+        to: receiver,
         subject: "test".into(),
         body: "This is a test".into(),
     };
@@ -36,6 +35,10 @@ fn with_smtp_client(
     warp::any().map(move || client.clone())
 }
 
+fn with_receiver(user: String) -> impl Filter<Extract = (String,), Error = Infallible> + Clone {
+    warp::any().map(move || format!("{0}@localhost", user.clone()))
+}
+
 #[tokio::main]
 async fn main() {
     let config = Config::build();
@@ -45,8 +48,8 @@ async fn main() {
     let client = SmtpClient::new(
         (config.server_url, config.smtp_port),
         Credentials {
-            user: config.email_user,
-            password: config.email_password,
+            user: config.email_sender_user,
+            password: config.email_sender_password,
         },
     )
     .await;
@@ -55,6 +58,7 @@ async fn main() {
     let send_email_route = warp::path!("send")
         .and(warp::post())
         .and(with_smtp_client(client))
+        .and(with_receiver(config.email_receiver_user))
         .and_then(send_email_handler);
 
     let routes = health_route

@@ -1,13 +1,12 @@
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize)]
 pub struct Config {
-    pub smtp_port: u16,
+    pub imaps_port: u16,
     pub server_url: String,
-    pub email_sender_user: String,
-    pub email_sender_password: String,
     pub email_receiver_user: String,
-    pub sender_port: u16,
+    pub email_receiver_password: String,
+    pub receiver_port: u16,
 }
 
 impl Config {
