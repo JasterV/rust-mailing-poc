@@ -14,7 +14,7 @@ async fn health_handler() -> Result<impl Reply, Rejection> {
 async fn fetch_inbox_handler(client: Arc<Mutex<ImapClient>>) -> Result<impl Reply, Rejection> {
     let mut client = client.lock().await;
 
-    match client.fetch_inbox(10).await {
+    match client.fetch_inbox().await {
         Ok(messages) => Ok(warp::reply::with_status(
             format!("Got {0} messages", messages.len()),
             StatusCode::OK,

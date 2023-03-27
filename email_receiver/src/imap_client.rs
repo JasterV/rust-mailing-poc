@@ -47,7 +47,7 @@ impl Client {
         Client { imap_session }
     }
 
-    pub async fn fetch_inbox(&mut self, threshold: u16) -> Result<Vec<String>, String> {
+    pub async fn fetch_inbox(&mut self) -> Result<Vec<String>, String> {
         // we want to fetch the first email in the INBOX mailbox
         self.imap_session
             .select("INBOX")
@@ -58,7 +58,7 @@ impl Client {
         // RFC 822 dictates the format of the body of e-mails
         let messages_stream = self
             .imap_session
-            .fetch(format!("{threshold}"), "RFC822")
+            .fetch("1", "RFC822")
             .await
             .map_err(|io_err| io_err.to_string())?;
         let messages = messages_stream
