@@ -58,9 +58,10 @@ impl Client {
         // RFC 822 dictates the format of the body of e-mails
         let messages_stream = self
             .imap_session
-            .fetch("1", "RFC822")
+            .fetch("1:*", "RFC822")
             .await
             .map_err(|io_err| io_err.to_string())?;
+
         let messages = messages_stream
             .try_collect::<Vec<Fetch>>()
             .await
