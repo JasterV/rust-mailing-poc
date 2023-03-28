@@ -1,21 +1,21 @@
 # rust-mailing-poc
 
-Just a POC of both SMTP and IMAP rust clients.
+Just a POC of both SMTP and IMAP rust crates.
 
-## Sender
+## SMTP Client
 
-We are using [Lettre](https://github.com/lettre/lettre) as a SMTP client.
+We are using [Lettre](https://github.com/lettre/lettre) crate for SMTP.
 
-## Receiver 
+## IMAP client
 
-We use [async-imap](https://github.com/async-email/async-imap) as an IMAP client.
+We use [async-imap](https://github.com/async-email/async-imap) crate to communicate with an IMAP server.
 
 ## IMAP/SMTP server
 
 We are using [Greenmail](https://greenmail-mail-test.github.io/greenmail/).
 They have a public docker image we can use to run an email server locally that supports both SMTP and IMAP protocols.
 
-## Connection pool
+## IMAP connection pool
 
 I've implemented a connection pool manager for IMAP sessions using the [deadpool](https://github.com/bikeshedder/deadpool) crate.
 
@@ -62,9 +62,3 @@ make down
 ```
 
 or `<Ctrl-C>`
-
-## TODO
-
-- [X] Use env_logger (just for fun actually)
-- [X] Implement email_receiver as a web server that exposes multiple endpoints to play around with IMAP commands
-- [X] Add a Makefile with commands to make it easier to test both sender and receiver

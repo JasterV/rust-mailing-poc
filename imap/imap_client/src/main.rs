@@ -2,9 +2,9 @@ mod config;
 
 use config::Config;
 use deadpool::managed;
-use imap_connection_pool::{
+use deadpool_imap::{
     connection::{ConnectionConfig, Credentials},
-    Manager as ImapConnectionManager,
+    ImapConnectionManager,
 };
 use std::convert::Infallible;
 use warp::{http::StatusCode, Filter, Rejection, Reply};
@@ -44,10 +44,10 @@ async fn main() {
 
     let manager = ImapConnectionManager::new(ConnectionConfig {
         domain: config.server_url,
-        port: config.imaps_port,
+        port: config.server_port,
         credentials: Credentials {
-            user: config.email_receiver_user,
-            password: config.email_receiver_password,
+            user: config.user,
+            password: config.password,
         },
     });
 
@@ -72,7 +72,5 @@ async fn main() {
 
     log::info!("Email receiver running...");
 
-    warp::serve(routes)
-        .run(([0, 0, 0, 0], config.receiver_port))
-        .await;
+    warp::serve(routes).run(([0, 0, 0, 0], config.port)).await;
 }

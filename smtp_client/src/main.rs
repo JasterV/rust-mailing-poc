@@ -48,10 +48,10 @@ async fn main() {
     log::debug!("Connecting to the server...");
 
     let client = SmtpClient::new(
-        (config.server_url, config.smtp_port),
+        (config.server_url, config.server_port),
         Credentials {
-            user: config.email_sender_user,
-            password: config.email_sender_password,
+            user: config.user,
+            password: config.password,
         },
     )
     .await;
@@ -62,7 +62,7 @@ async fn main() {
     let send_email_route = warp::path!("send")
         .and(warp::post())
         .and(with_smtp_client(client))
-        .and(with_receiver(config.email_receiver_user))
+        .and(with_receiver(config.recipient_user))
         .and_then(send_email_handler);
 
     let routes = health_route
@@ -71,7 +71,5 @@ async fn main() {
 
     log::debug!("Running email sender...");
 
-    warp::serve(routes)
-        .run(([0, 0, 0, 0], config.sender_port))
-        .await;
+    warp::serve(routes).run(([0, 0, 0, 0], config.port)).await;
 }

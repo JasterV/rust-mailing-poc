@@ -10,18 +10,18 @@ use session_wrapper::SessionWrapper;
 type RecycleResult = deadpool::managed::RecycleResult<anyhow::Error>;
 // type RecycleError = deadpool::managed::RecycleError<anyhow::Error>;
 
-pub struct Manager {
+pub struct ImapConnectionManager {
     config: ConnectionConfig,
 }
 
-impl Manager {
+impl ImapConnectionManager {
     pub fn new(config: ConnectionConfig) -> Self {
         Self { config }
     }
 }
 
 #[async_trait]
-impl managed::Manager for Manager {
+impl managed::Manager for ImapConnectionManager {
     type Type = SessionWrapper;
     type Error = anyhow::Error;
 

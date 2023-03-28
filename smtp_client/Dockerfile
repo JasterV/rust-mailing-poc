@@ -1,5 +1,5 @@
 FROM rust:1.68.0 as builder
-ENV NAME=email_sender
+ENV NAME=smtp_client
 
 # First build a dummy project with our dependencies to cache them in Docker
 WORKDIR /usr/src
@@ -18,7 +18,7 @@ RUN cargo build --release
 
 # Second stage putting the build result into a debian jessie-slim image
 FROM debian:buster-slim
-ENV NAME=email_sender
+ENV NAME=smtp_client
 
 RUN apt-get update \
   && apt-get install -y ca-certificates tzdata \

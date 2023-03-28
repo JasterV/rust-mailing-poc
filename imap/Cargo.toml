@@ -1,6 +1,6 @@
 [workspace]
 
 members = [
-  "email_receiver",
-  "imap_connection_pool"
+  "imap_client",
+  "deadpool_imap"
 ]

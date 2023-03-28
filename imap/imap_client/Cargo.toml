@@ -1,16 +1,19 @@
 [package]
-name = "imap_connection_pool"
+name = "imap_client"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.70"
 async-imap = { version = "0.6.0", default-features = false, features = ["tokio", "runtime-tokio"] }
 async-native-tls = { version = "0.4", default-features = false, features = ["tokio", "runtime-tokio", "futures-util"] }
-deadpool = "0.9.5"
+envy = "0.4.2"
 futures = "0.3.27"
-serde = { version = "1.0.159", features = ["derive"] }
-thiserror = "1.0.40"
+serde = { version = "1.0.158", features = ["derive"] }
 tokio = { version = "1.26.0", features = ["full"] }
+warp = "0.3.3"
+deadpool_imap = { path = "../deadpool_imap" }
+deadpool = "0.9.5"
+env_logger = "0.10.0"
+log = "0.4.17"

@@ -4,32 +4,32 @@ services:
     image: "greenmail/standalone:2.0.0"
     env_file: ".env"
     environment:
-      GREENMAIL_OPTS: "-Dgreenmail.smtp.port=${SMTP_PORT} -Dgreenmail.imaps.port=${IMAPS_PORT} -Dgreenmail.users=${EMAIL_SENDER_USER}:${EMAIL_SENDER_PASSWORD}@localhost,${EMAIL_RECEIVER_USER}:${EMAIL_RECEIVER_PASSWORD}@localhost -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.verbose"
+      GREENMAIL_OPTS: "-Dgreenmail.smtp.port=${SMTP_SERVER_PORT} -Dgreenmail.imaps.port=${IMAPS_SERVER_PORT} -Dgreenmail.users=${SMTP_USER}:${SMTP_PASSWORD}@localhost,${IMAP_USER}:${IMAP_PASSWORD}@localhost -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.verbose"
       JAVA_OPTS: "-Djava.net.preferIPv4Stack=true -Xmx512m"
     healthcheck:
       test: timeout 1s bash -c ':> /dev/tcp/127.0.0.1/8080' || exit 1
       interval: 1s
       retries: 3
 
-  email_sender:
-    container_name: "email_sender"
-    command: "email_sender"
-    build: email_sender
+  smtp_client:
+    container_name: "smtp_client"
+    command: "smtp_client"
+    build: smtp_client
     env_file: ".env"
     ports:
-      - "${SENDER_PORT}:${SENDER_PORT}"
+      - "${SMTP_CLIENT_PORT}:${SMTP_CLIENT_PORT}"
     depends_on:
       greenmail:
         condition: service_healthy
 
 
-  email_receiver:
-    container_name: "email_receiver"
-    command: "email_receiver"
+  imap_client:
+    container_name: "imap_client"
+    command: "imap_client"
     build: imap
     env_file: ".env"
     ports:
-      - "${RECEIVER_PORT}:${RECEIVER_PORT}"
+      - "${IMAP_CLIENT_PORT}:${IMAP_CLIENT_PORT}"
     depends_on:
       greenmail:
         condition: service_healthy
