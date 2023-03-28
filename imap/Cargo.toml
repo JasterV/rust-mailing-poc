@@ -1,6 +1,0 @@
-[workspace]
-
-members = [
-  "imap_client",
-  "deadpool_imap"
-]

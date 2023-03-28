@@ -26,7 +26,9 @@ services:
   imap_client:
     container_name: "imap_client"
     command: "imap_client"
-    build: imap
+    build: 
+      context: .
+      dockerfile: ./imap_client/Dockerfile
     env_file: ".env"
     ports:
       - "${IMAP_CLIENT_PORT}:${IMAP_CLIENT_PORT}"
