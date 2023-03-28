@@ -34,32 +34,31 @@ cp .env.example .env
 Build the images 
 
 ```
-docker compose build
+make build
 ```
 
 Run the compose 
 
 ```
-docker compose up
+make up
 ```
 
 Make the sender post a dummy message 
 
 ```
-curl -X POST http://localhost:8000/send
+PORT=8000 make send_email
 ```
 
 Call the receiver to fetch all the messages on the inbox
 
 ```
-curl -X GET http://localhost:9095/inbox
+PORT=9095 make fetch_inbox
 ```
-
 
 Stop the containers 
 
 ```
-docker compose down
+make down
 ```
 
 or `<Ctrl-C>`
@@ -69,4 +68,3 @@ or `<Ctrl-C>`
 - [X] Use env_logger (just for fun actually)
 - [X] Implement email_receiver as a web server that exposes multiple endpoints to play around with IMAP commands
 - [ ] Add a Makefile with commands to make it easier to test both sender and receiver
-- [ ] Document both sender and receiver APIs (just to make this POC more friendly)

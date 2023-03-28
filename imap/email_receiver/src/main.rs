@@ -55,6 +55,8 @@ async fn main() {
         .build()
         .expect("Can't build the connection pool");
 
+    let _conn = pool.get().await.expect("Can't connect to the IMAP server");
+
     log::info!("Connection pool built successfully.");
 
     let health_route = warp::path!("health").and_then(health_handler);
