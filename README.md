@@ -25,6 +25,12 @@ If we want to be able to execute multiple IMAP commands at once, we need to use 
 
 ## Try out
 
+Copy the `.env.example` file to a `.env` file 
+
+```
+cp .env.example .env
+```
+
 Build the images 
 
 ```
