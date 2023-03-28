@@ -17,7 +17,7 @@ They have a public docker image we can use to run an email server locally that s
 
 ## Connection pool
 
-I've implemented a connection pool manager for IMAP sessions using the [deadpool]() crate.
+I've implemented a connection pool manager for IMAP sessions using the [deadpool](https://github.com/bikeshedder/deadpool) crate.
 
 The reason for doing this is that an IMAP session only allows to execute 1 command at a time, and 1 connection only can have 1 session, so in this case connection = session. 
 
