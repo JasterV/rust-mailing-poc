@@ -32,16 +32,9 @@ impl managed::Manager for Manager {
     }
 
     async fn recycle(&self, session: &mut SessionWrapper) -> RecycleResult {
-        println!("Trying to recycle...");
         match session.clear().await {
-            Ok(_) => {
-                println!("Recycling, the session was cleared :D");
-                Ok(())
-            }
-            Err(e) => {
-                println!("Can't recycle, failed clearing the session");
-                Err(e.into())
-            }
+            Ok(_) => Ok(()),
+            Err(e) => Err(e.into()),
         }
     }
 }
