@@ -41,9 +41,11 @@ fn with_receiver(user: String) -> impl Filter<Extract = (String,), Error = Infal
 
 #[tokio::main]
 async fn main() {
+    env_logger::init();
+
     let config = Config::build();
 
-    println!("Trying to connect...");
+    log::debug!("Connecting to the server...");
 
     let client = SmtpClient::new(
         (config.server_url, config.smtp_port),
@@ -53,6 +55,8 @@ async fn main() {
         },
     )
     .await;
+
+    log::debug!("Connected successfully");
 
     let health_route = warp::path!("health").and_then(health_handler);
     let send_email_route = warp::path!("send")
@@ -65,7 +69,7 @@ async fn main() {
         .or(send_email_route)
         .with(warp::cors().allow_any_origin());
 
-    println!("Running email sender...");
+    log::debug!("Running email sender...");
 
     warp::serve(routes)
         .run(([0, 0, 0, 0], config.sender_port))
