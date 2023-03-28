@@ -67,4 +67,4 @@ or `<Ctrl-C>`
 
 - [X] Use env_logger (just for fun actually)
 - [X] Implement email_receiver as a web server that exposes multiple endpoints to play around with IMAP commands
-- [ ] Add a Makefile with commands to make it easier to test both sender and receiver
+- [X] Add a Makefile with commands to make it easier to test both sender and receiver
