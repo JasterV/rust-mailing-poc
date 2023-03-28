@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+  "email_receiver",
+  "imap_connection_pool"
+]

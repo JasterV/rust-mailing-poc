@@ -26,7 +26,7 @@ services:
   email_receiver:
     container_name: "email_receiver"
     command: "email_receiver"
-    build: email_receiver
+    build: imap
     env_file: ".env"
     ports:
       - "${RECEIVER_PORT}:${RECEIVER_PORT}"

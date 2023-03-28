@@ -1,17 +1,27 @@
 mod config;
-mod imap_client;
 
 use config::Config;
-use imap_client::{Client as ImapClient, Credentials};
+use deadpool::managed;
+use imap_connection_pool::{
+    connection::{ConnectionConfig, Credentials},
+    Manager,
+};
+
 use std::convert::Infallible;
 use warp::{http::StatusCode, Filter, Rejection, Reply};
+
+type Pool = managed::Pool<Manager>;
 
 async fn health_handler() -> Result<impl Reply, Rejection> {
     Ok(StatusCode::OK)
 }
 
-async fn fetch_inbox_handler(mut client: ImapClient) -> Result<impl Reply, Rejection> {
-    match client.fetch_inbox().await {
+async fn fetch_inbox_handler(pool: Pool) -> Result<impl Reply, Rejection> {
+    let mut conn = pool.get().await.unwrap();
+
+    println!("Got the pool!");
+
+    match conn.fetch_inbox().await {
         Ok(messages) => Ok(warp::reply::with_status(
             warp::reply::json(&messages),
             StatusCode::OK,
@@ -23,27 +33,30 @@ async fn fetch_inbox_handler(mut client: ImapClient) -> Result<impl Reply, Rejec
     }
 }
 
-fn with_imap_client(
-    client: ImapClient,
-) -> impl Filter<Extract = (ImapClient,), Error = Infallible> + Clone {
-    warp::any().map(move || client.clone())
+fn with_connection_pool(pool: Pool) -> impl Filter<Extract = (Pool,), Error = Infallible> + Clone {
+    warp::any().map(move || pool.clone())
 }
 
 #[tokio::main]
 async fn main() {
     let config = Config::build();
 
-    let credentials = Credentials {
-        user: config.email_receiver_user,
-        password: config.email_receiver_password,
-    };
-    let imap_client = ImapClient::new((config.server_url, config.imaps_port), credentials).await;
+    let manager = Manager::new(ConnectionConfig {
+        domain: config.server_url,
+        port: config.imaps_port,
+        credentials: Credentials {
+            user: config.email_receiver_user,
+            password: config.email_receiver_password,
+        },
+    });
+
+    let pool = Pool::builder(manager).build().unwrap();
 
     let health_route = warp::path!("health").and_then(health_handler);
 
     let fetch_inbox_route = warp::path!("inbox")
         .and(warp::get())
-        .and(with_imap_client(imap_client))
+        .and(with_connection_pool(pool))
         .and_then(fetch_inbox_handler);
 
     let routes = health_route
