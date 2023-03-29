@@ -55,7 +55,7 @@ impl From<Flag> for String {
             Flag::Draft => "\\Draft".into(),
             Flag::Recent => "\\Recent".into(),
             Flag::MayCreate => "\\*".into(),
-            Flag::Custom(custom) => custom.into(),
+            Flag::Custom(custom) => custom,
         }
     }
 }

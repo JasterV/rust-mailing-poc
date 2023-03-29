@@ -77,7 +77,7 @@ impl SessionWrapper {
                 let body: String = std::str::from_utf8(body)?.to_string();
                 let uid = m.uid.unwrap();
                 let size = m.size.unwrap();
-                let flags = m.flags().into_iter().map(From::from).collect();
+                let flags = m.flags().map(From::from).collect();
                 let message = Message {
                     body,
                     size,
