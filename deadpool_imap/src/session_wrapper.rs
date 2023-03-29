@@ -26,6 +26,7 @@ pub enum Flag {
     Seen,
     Deleted,
     MyCustomFlag,
+    Draft,
 }
 
 impl From<Flag> for InternalFlag<'_> {
@@ -34,6 +35,7 @@ impl From<Flag> for InternalFlag<'_> {
             Flag::Seen => InternalFlag::Seen,
             Flag::Deleted => InternalFlag::Deleted,
             Flag::MyCustomFlag => InternalFlag::Custom("MyCustomFlag".into()),
+            Flag::Draft => InternalFlag::Draft,
         }
     }
 }
@@ -61,8 +63,11 @@ impl SessionWrapper {
             .map(Self::internal_flag_to_str)
             .collect::<Vec<String>>()
             .join(" ");
-        let query = format!("+FLAGS.SILENT ({})", flags);
-        let _ = self.session.uid_store(seq_set, query).await?;
+
+        let query = format!("FLAGS ({})", flags);
+        let updates_stream = self.session.uid_store(seq_set, query).await?;
+        let _updates = updates_stream.try_collect::<Vec<Fetch>>().await?;
+
         Ok(())
     }
 
@@ -70,7 +75,7 @@ impl SessionWrapper {
         // we want to fetch the first email in the INBOX mailbox
         self.session.examine(folder).await?;
 
-        let query = "(RFC822 UID RFC822.SIZE RFC822.TEXT)";
+        let query = "(RFC822 UID RFC822.SIZE RFC822.TEXT FLAGS)";
 
         // fetch message number 1 in this mailbox, along with its RFC822 field.
         // RFC 822 dictates the format of the body of e-mails
@@ -123,6 +128,4 @@ impl SessionWrapper {
 pub enum ImapError {
     #[error("Error: {0}")]
     InnerImapError(#[from] async_imap::error::Error),
-    #[error("Connection not established")]
-    NonExistingSession,
 }

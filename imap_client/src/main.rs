@@ -23,7 +23,7 @@ async fn set_flags_handler(uids: Vec<u32>, pool: Pool) -> Result<impl Reply, Rej
     log::info!("Set flags handler called: {:?}", uids);
 
     match conn
-        .set_flags("INBOX", &uids, &vec![Flag::MyCustomFlag])
+        .set_flags("INBOX", &uids, &vec![Flag::Draft, Flag::MyCustomFlag])
         .await
     {
         Ok(()) => Ok(warp::reply::with_status(
