@@ -4,26 +4,33 @@ use config::Config;
 use deadpool::managed;
 use deadpool_imap::{
     connection::{ConnectionConfig, Credentials},
-    session::{Flag, SetFlagRequest},
+    session::{Flag, SetFlagCommand},
     ImapConnectionManager,
 };
+use serde::Deserialize;
 use std::convert::Infallible;
 use warp::{http::StatusCode, Filter, Rejection, Reply};
 
 type Pool = managed::Pool<ImapConnectionManager>;
 
+#[derive(Deserialize, Debug)]
+struct SetFlagsRequest {
+    uids: Vec<u32>,
+    flags: Vec<Flag>,
+}
+
 async fn health_handler() -> Result<impl Reply, Rejection> {
     Ok(StatusCode::OK)
 }
 
-async fn set_flags_handler(uids: Vec<u32>, pool: Pool) -> Result<impl Reply, Rejection> {
-    log::info!("Set flags handler called: {:?}", uids);
+async fn set_flags_handler(body: SetFlagsRequest, pool: Pool) -> Result<impl Reply, Rejection> {
+    log::info!("Set flags handler called: {body:?}");
     let mut conn = pool.get().await.unwrap();
 
-    let data = SetFlagRequest {
+    let data = SetFlagCommand {
         folder: "INBOX".into(),
-        uids,
-        flags: vec![Flag::Draft, Flag::Custom("TestingFlag".into())],
+        uids: body.uids,
+        flags: body.flags,
     };
 
     match conn.set_flags(data).await {

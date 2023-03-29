@@ -21,7 +21,7 @@ pub struct Message {
     pub flags: Vec<Flag>,
 }
 
-pub struct SetFlagRequest {
+pub struct SetFlagCommand {
     pub folder: String,
     pub uids: Vec<u32>,
     pub flags: Vec<Flag>,
@@ -38,11 +38,11 @@ impl SessionWrapper {
         Ok(())
     }
 
-    pub async fn set_flags(&mut self, data: SetFlagRequest) -> Result<()> {
+    pub async fn set_flags(&mut self, data: SetFlagCommand) -> Result<()> {
         self.session.select(data.folder).await?;
 
         let uids: Vec<String> = data.uids.iter().map(|x| x.to_string()).collect();
-        let seq_set = uids.join(" ");
+        let seq_set = uids.join(",");
         let flags = data
             .flags
             .into_iter()
