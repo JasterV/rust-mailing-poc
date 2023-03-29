@@ -1,23 +1,15 @@
 use async_imap::types::Flag as InternalFlag;
-use serde::Serialize;
+use serde::{Serialize, Serializer};
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone)]
 pub enum Flag {
-    #[serde(rename(serialize = "\\Seen"))]
     Seen,
-    #[serde(rename(serialize = "\\Answered"))]
     Answered,
-    #[serde(rename(serialize = "\\Flagged"))]
     Flagged,
-    #[serde(rename(serialize = "\\Deleted"))]
     Deleted,
-    #[serde(rename(serialize = "\\Draft"))]
     Draft,
-    #[serde(rename(serialize = "\\Recent"))]
     Recent,
-    #[serde(rename(serialize = "\\*"))]
     MayCreate,
-    #[serde(rename(serialize = "{0}"))]
     Custom(String),
 }
 
@@ -63,5 +55,15 @@ impl From<Flag> for String {
             Flag::MayCreate => "\\*".into(),
             Flag::Custom(custom) => custom.into(),
         }
+    }
+}
+
+impl Serialize for Flag {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let serialized = String::from(self.clone());
+        serializer.serialize_str(&serialized)
     }
 }
