@@ -2,7 +2,8 @@ mod config;
 mod smtp_client;
 
 use config::Config;
-use smtp_client::{Client as SmtpClient, Credentials, SendEmailRequest};
+use serde::Deserialize;
+use smtp_client::{Client as SmtpClient, Credentials, SendEmailCommand};
 use std::convert::Infallible;
 use warp::{http::StatusCode, Filter, Rejection, Reply};
 
@@ -10,11 +11,21 @@ async fn health_handler() -> Result<impl Reply, Rejection> {
     Ok(StatusCode::OK)
 }
 
-async fn send_email_handler(client: SmtpClient, receiver: String) -> Result<impl Reply, Rejection> {
-    let mock_req = SendEmailRequest {
+#[derive(Deserialize)]
+struct SendEmailRequest {
+    subject: String,
+    body: String,
+}
+
+async fn send_email_handler(
+    data: SendEmailRequest,
+    client: SmtpClient,
+    receiver: String,
+) -> Result<impl Reply, Rejection> {
+    let mock_req = SendEmailCommand {
         to: receiver,
-        subject: "test".into(),
-        body: "This is a test".into(),
+        subject: data.subject,
+        body: data.body,
     };
 
     match client.send_email(mock_req).await {
@@ -61,6 +72,7 @@ async fn main() {
     let health_route = warp::path!("health").and_then(health_handler);
     let send_email_route = warp::path!("send")
         .and(warp::post())
+        .and(warp::body::json())
         .and(with_smtp_client(client))
         .and(with_receiver(config.recipient_user))
         .and_then(send_email_handler);

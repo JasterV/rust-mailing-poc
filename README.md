@@ -46,7 +46,7 @@ make up
 Make the sender post a dummy message 
 
 ```
-curl -X POST http://localhost:<PORT>/send
+curl --header "Content-Type: application/json" --data '{"subject": "Dummy email", body: "This is the body of the email"}' http://localhost:<PORT>/send
 ```
 
 Call the receiver to fetch all the messages on the inbox

@@ -17,7 +17,7 @@ pub struct Credentials {
     pub password: String,
 }
 
-pub struct SendEmailRequest {
+pub struct SendEmailCommand {
     pub to: String,
     pub body: String,
     pub subject: String,
@@ -27,6 +27,7 @@ impl Client {
     pub async fn new((domain, port): ServerAddress, credentials: Credentials) -> Self {
         let creds = LettreCredentials::new(credentials.user.clone(), credentials.password);
 
+        // TODO: Remove `builder_dangerous` once ready and setup proper SSL
         let mailer: AsyncSmtpTransport<Tokio1Executor> =
             AsyncSmtpTransport::<Tokio1Executor>::builder_dangerous(domain)
                 .credentials(creds)
@@ -44,7 +45,7 @@ impl Client {
         }
     }
 
-    pub async fn send_email(&self, data: SendEmailRequest) -> Result<(), String> {
+    pub async fn send_email(&self, data: SendEmailCommand) -> Result<(), String> {
         let from = format!("{0}@localhost", self.user.clone());
 
         let email = Message::builder()
