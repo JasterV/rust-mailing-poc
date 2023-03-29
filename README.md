@@ -58,7 +58,7 @@ curl -X GET http://localhost:$(PORT)/inbox
 Set new flags to messages using their UIDs
 
 ```
-curl --header "Content-Type: application/json" --data '{"uids": [1, 2], "flags": ["Draft", "MyCustomFlag"]}' http://localhost:<PORT>/inbox/flags
+curl --header "Content-Type: application/json" --data '{"uids": [1, 2], "flags": ["Draft", {"custom": "MyCustomFlag"}]}' http://localhost:<PORT>/inbox/flags
 ```
 
 Stop the containers 
