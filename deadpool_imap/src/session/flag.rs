@@ -2,7 +2,6 @@ use async_imap::types::Flag as InternalFlag;
 use serde::{Deserialize, Serialize, Serializer};
 
 #[derive(Debug, Clone, Deserialize)]
-#[serde(untagged)]
 pub enum Flag {
     Seen,
     Answered,
@@ -10,7 +9,9 @@ pub enum Flag {
     Deleted,
     Draft,
     Recent,
+    #[serde(rename(deserialize = "*"))]
     MayCreate,
+    #[serde(rename(deserialize = "custom"))]
     Custom(String),
 }
 

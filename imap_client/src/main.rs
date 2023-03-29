@@ -27,6 +27,8 @@ async fn set_flags_handler(body: SetFlagsRequest, pool: Pool) -> Result<impl Rep
     log::info!("Set flags handler called: {body:?}");
     let mut conn = pool.get().await.unwrap();
 
+    log::debug!("Set flags handler received body {body:?}");
+
     let data = SetFlagCommand {
         folder: "INBOX".into(),
         uids: body.uids,
