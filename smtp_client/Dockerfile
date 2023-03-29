@@ -5,7 +5,6 @@ ENV NAME=smtp_client
 WORKDIR /usr/src
 RUN cargo new --bin ${NAME}
 WORKDIR /usr/src/${NAME}
-COPY ./Cargo.lock ./Cargo.lock
 COPY ./Cargo.toml ./Cargo.toml
 RUN cargo build --release
 
