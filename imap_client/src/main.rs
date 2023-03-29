@@ -4,6 +4,7 @@ use config::Config;
 use deadpool::managed;
 use deadpool_imap::{
     connection::{ConnectionConfig, Credentials},
+    session_wrapper::Flag,
     ImapConnectionManager,
 };
 use std::convert::Infallible;
@@ -15,12 +16,33 @@ async fn health_handler() -> Result<impl Reply, Rejection> {
     Ok(StatusCode::OK)
 }
 
+async fn set_flags_handler(uids: Vec<u32>, pool: Pool) -> Result<impl Reply, Rejection> {
+    let mut conn = pool.get().await.unwrap();
+
+    log::debug!("Got new connection from the pool!");
+    log::info!("Set flags handler called: {:?}", uids);
+
+    match conn
+        .set_flags("INBOX", &uids, &vec![Flag::MyCustomFlag])
+        .await
+    {
+        Ok(()) => Ok(warp::reply::with_status(
+            warp::reply::json(&String::from("Flags set")),
+            StatusCode::OK,
+        )),
+        Err(error) => Ok(warp::reply::with_status(
+            warp::reply::json(&format!("Got an error: {error:?}")),
+            StatusCode::IM_A_TEAPOT,
+        )),
+    }
+}
+
 async fn fetch_inbox_handler(pool: Pool) -> Result<impl Reply, Rejection> {
     let mut conn = pool.get().await.unwrap();
 
     log::debug!("Got new connection from the pool!");
 
-    match conn.fetch_inbox().await {
+    match conn.fetch("INBOX").await {
         Ok(messages) => Ok(warp::reply::with_status(
             warp::reply::json(&messages),
             StatusCode::OK,
@@ -61,12 +83,19 @@ async fn main() {
 
     let health_route = warp::path!("health").and_then(health_handler);
 
+    let set_flags_route = warp::path!("inbox" / "flags")
+        .and(warp::post())
+        .and(warp::body::json())
+        .and(with_connection_pool(pool.clone()))
+        .and_then(set_flags_handler);
+
     let fetch_inbox_route = warp::path!("inbox")
         .and(warp::get())
         .and(with_connection_pool(pool))
         .and_then(fetch_inbox_handler);
 
     let routes = health_route
+        .or(set_flags_route)
         .or(fetch_inbox_route)
         .with(warp::cors().allow_any_origin());
 
