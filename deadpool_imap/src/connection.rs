@@ -1,4 +1,4 @@
-use crate::session_wrapper::SessionWrapper;
+use super::session::SessionWrapper;
 use anyhow::Result;
 use async_native_tls::TlsConnector;
 

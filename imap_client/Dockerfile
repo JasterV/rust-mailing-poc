@@ -26,7 +26,7 @@ RUN rm ./${NAME}/target/release/deps/lib${LIB}*
 
 # Now copy the sources and do the real build
 COPY ./${NAME}/src/* ./${NAME}/src/
-COPY ./${LIB}/src/* ./${LIB}/src/
+COPY ./${LIB}/src/ ./${LIB}/src/
 
 WORKDIR /usr/src/${NAME}
 

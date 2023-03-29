@@ -1,5 +1,5 @@
+use super::Flag;
 use anyhow::Result;
-use async_imap::types::Flag as InternalFlag;
 use async_imap::{types::Fetch, Session};
 use async_native_tls::TlsStream;
 use futures::TryStreamExt;
@@ -18,26 +18,13 @@ pub struct Message {
     pub body: String,
     pub uid: u32,
     pub size: u32,
-    pub flags: Vec<String>,
+    pub flags: Vec<Flag>,
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum Flag {
-    Seen,
-    Deleted,
-    MyCustomFlag,
-    Draft,
-}
-
-impl From<Flag> for InternalFlag<'_> {
-    fn from(value: Flag) -> Self {
-        match value {
-            Flag::Seen => InternalFlag::Seen,
-            Flag::Deleted => InternalFlag::Deleted,
-            Flag::MyCustomFlag => InternalFlag::Custom("MyCustomFlag".into()),
-            Flag::Draft => InternalFlag::Draft,
-        }
-    }
+pub struct SetFlagRequest {
+    pub folder: String,
+    pub uids: Vec<u32>,
+    pub flags: Vec<Flag>,
 }
 
 impl SessionWrapper {
@@ -51,16 +38,15 @@ impl SessionWrapper {
         Ok(())
     }
 
-    pub async fn set_flags(&mut self, folder: &str, uids: &[u32], flags: &[Flag]) -> Result<()> {
-        self.session.select(folder).await?;
+    pub async fn set_flags(&mut self, data: SetFlagRequest) -> Result<()> {
+        self.session.select(data.folder).await?;
 
-        let uids: Vec<String> = uids.iter().map(|x| x.to_string()).collect();
+        let uids: Vec<String> = data.uids.iter().map(|x| x.to_string()).collect();
         let seq_set = uids.join(" ");
-        let flags = flags
+        let flags = data
+            .flags
             .into_iter()
-            .cloned()
             .map(From::from)
-            .map(Self::internal_flag_to_str)
             .collect::<Vec<String>>()
             .join(" ");
 
@@ -91,11 +77,7 @@ impl SessionWrapper {
                 let body: String = std::str::from_utf8(body)?.to_string();
                 let uid = m.uid.unwrap();
                 let size = m.size.unwrap();
-                let flags = m
-                    .flags()
-                    .into_iter()
-                    .map(Self::internal_flag_to_str)
-                    .collect();
+                let flags = m.flags().into_iter().map(From::from).collect();
                 let message = Message {
                     body,
                     size,
@@ -108,19 +90,6 @@ impl SessionWrapper {
             .collect();
 
         Ok(messages)
-    }
-
-    fn internal_flag_to_str<'a>(flag: InternalFlag<'a>) -> String {
-        match flag {
-            InternalFlag::Seen => "\\Seen".into(),
-            InternalFlag::Answered => "\\Answered".into(),
-            InternalFlag::Flagged => "\\Flagged".into(),
-            InternalFlag::Deleted => "\\Deleted".into(),
-            InternalFlag::Draft => "\\Draft".into(),
-            InternalFlag::Recent => "\\Recent".into(),
-            InternalFlag::MayCreate => "\\*".into(),
-            InternalFlag::Custom(custom) => custom.into(),
-        }
     }
 }
 

@@ -1,11 +1,11 @@
 pub mod connection;
-pub mod session_wrapper;
+pub mod session;
 
 use anyhow::Result;
 use async_native_tls::TlsConnector;
 use connection::ConnectionConfig;
 use deadpool::{async_trait, managed};
-use session_wrapper::SessionWrapper;
+use session::SessionWrapper;
 
 type RecycleResult = deadpool::managed::RecycleResult<anyhow::Error>;
 // type RecycleError = deadpool::managed::RecycleError<anyhow::Error>;
@@ -42,5 +42,5 @@ impl managed::Manager for ImapConnectionManager {
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("Client error: {0}")]
-    ClientError(#[from] session_wrapper::ImapError),
+    ClientError(#[from] session::ImapError),
 }

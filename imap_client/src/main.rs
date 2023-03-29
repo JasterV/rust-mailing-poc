@@ -4,7 +4,7 @@ use config::Config;
 use deadpool::managed;
 use deadpool_imap::{
     connection::{ConnectionConfig, Credentials},
-    session_wrapper::Flag,
+    session::{Flag, SetFlagRequest},
     ImapConnectionManager,
 };
 use std::convert::Infallible;
@@ -17,15 +17,16 @@ async fn health_handler() -> Result<impl Reply, Rejection> {
 }
 
 async fn set_flags_handler(uids: Vec<u32>, pool: Pool) -> Result<impl Reply, Rejection> {
+    log::info!("Set flags handler called: {:?}", uids);
     let mut conn = pool.get().await.unwrap();
 
-    log::debug!("Got new connection from the pool!");
-    log::info!("Set flags handler called: {:?}", uids);
+    let data = SetFlagRequest {
+        folder: "INBOX".into(),
+        uids,
+        flags: vec![Flag::Draft, Flag::Custom("TestingFlag".into())],
+    };
 
-    match conn
-        .set_flags("INBOX", &uids, &vec![Flag::Draft, Flag::MyCustomFlag])
-        .await
-    {
+    match conn.set_flags(data).await {
         Ok(()) => Ok(warp::reply::with_status(
             warp::reply::json(&String::from("Flags set")),
             StatusCode::OK,
@@ -39,8 +40,6 @@ async fn set_flags_handler(uids: Vec<u32>, pool: Pool) -> Result<impl Reply, Rej
 
 async fn fetch_inbox_handler(pool: Pool) -> Result<impl Reply, Rejection> {
     let mut conn = pool.get().await.unwrap();
-
-    log::debug!("Got new connection from the pool!");
 
     match conn.fetch("INBOX").await {
         Ok(messages) => Ok(warp::reply::with_status(
