@@ -8,11 +8,6 @@ use std::str::Utf8Error;
 use thiserror::Error;
 use tokio::net::TcpStream;
 
-#[derive(Debug)]
-pub struct SessionWrapper {
-    session: Session<TlsStream<TcpStream>>,
-}
-
 #[derive(Serialize, Debug)]
 pub struct Message {
     pub body: String,
@@ -25,6 +20,11 @@ pub struct SetFlagCommand {
     pub folder: String,
     pub uids: Vec<u32>,
     pub flags: Vec<Flag>,
+}
+
+#[derive(Debug)]
+pub struct SessionWrapper {
+    session: Session<TlsStream<TcpStream>>,
 }
 
 impl SessionWrapper {

@@ -46,13 +46,19 @@ make up
 Make the sender post a dummy message 
 
 ```
-PORT=8000 make send_email
+curl -X POST http://localhost:<PORT>/send
 ```
 
 Call the receiver to fetch all the messages on the inbox
 
 ```
-PORT=9095 make fetch_inbox
+curl -X GET http://localhost:$(PORT)/inbox
+```
+
+Set new flags to messages using their UIDs
+
+```
+curl --header "Content-Type: application/json" --data '{"uids": [1, 2], "flags": ["Draft", "MyCustomFlag"]}' http://localhost:<PORT>/inbox/flags
 ```
 
 Stop the containers 

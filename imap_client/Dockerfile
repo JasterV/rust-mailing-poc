@@ -41,4 +41,4 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /usr/src/${NAME}/target/release/${NAME} /usr/local/bin/${NAME}
-CMD RUST_LOG="debug" ${NAME}
+CMD ${NAME}
