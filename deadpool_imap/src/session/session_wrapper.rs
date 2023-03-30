@@ -58,13 +58,11 @@ impl SessionWrapper {
     }
 
     pub async fn fetch(&mut self, folder: &str) -> Result<Vec<Message>> {
-        // we want to fetch the first email in the INBOX mailbox
         self.session.examine(folder).await?;
 
+        // RFC 822 dictates the format of the body of e-mails
         let query = "(RFC822 UID RFC822.SIZE RFC822.TEXT FLAGS)";
 
-        // fetch message number 1 in this mailbox, along with its RFC822 field.
-        // RFC 822 dictates the format of the body of e-mails
         let messages_stream = self.session.fetch("1:*", query).await?;
 
         let messages = messages_stream.try_collect::<Vec<Fetch>>().await?;
