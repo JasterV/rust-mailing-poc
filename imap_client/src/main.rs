@@ -24,10 +24,9 @@ async fn health_handler() -> Result<impl Reply, Rejection> {
 }
 
 async fn set_flags_handler(body: SetFlagsRequest, pool: Pool) -> Result<impl Reply, Rejection> {
-    log::info!("Set flags handler called: {body:?}");
-    let mut conn = pool.get().await.unwrap();
+    log::debug!("set_flags_handler called with data => {body:?}");
 
-    log::debug!("Set flags handler received body {body:?}");
+    let mut conn = pool.get().await.unwrap();
 
     let data = SetFlagCommand {
         folder: "INBOX".into(),
